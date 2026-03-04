@@ -87,6 +87,8 @@
                     <th data-column-id="mgmt_ip" data-type="string">{{ lang._('Mgmt IP') }}</th>
                     <th data-column-id="chassis_id" data-type="string">{{ lang._('Chassis ID') }}</th>
                     <th data-column-id="model" data-type="string">{{ lang._('Model') }}</th>
+                    <th data-column-id="firmware_version" data-type="string">{{ lang._('Version') }}</th>
+                    <th data-column-id="vendor" data-type="string">{{ lang._('Vendor') }}</th>
                     <th data-column-id="is_online" data-width="6em" data-type="string">{{ lang._('Status') }}</th>
                     <th data-column-id="last_seen" data-type="string">{{ lang._('Last Seen') }}</th>
                 </tr>
@@ -137,8 +139,12 @@
                     <th data-column-id="admin_status" data-type="string">{{ lang._('Admin') }}</th>
                     <th data-column-id="oper_status" data-type="string">{{ lang._('Oper') }}</th>
                     <th data-column-id="speed_mbps" data-type="string">{{ lang._('Speed (Mbps)') }}</th>
-                    <th data-column-id="vlan_id" data-type="string">{{ lang._('VLAN') }}</th>
+                    <th data-column-id="vlan_display" data-type="string">{{ lang._('VLAN') }}</th>
                     <th data-column-id="lldp_neighbor_name" data-type="string">{{ lang._('LLDP Neighbor') }}</th>
+                    <th data-column-id="in_pkts" data-type="string">{{ lang._('In Pkts') }}</th>
+                    <th data-column-id="out_pkts" data-type="string">{{ lang._('Out Pkts') }}</th>
+                    <th data-column-id="in_octets" data-type="string">{{ lang._('In Bytes') }}</th>
+                    <th data-column-id="out_octets" data-type="string">{{ lang._('Out Bytes') }}</th>
                     <th data-column-id="in_errors" data-type="string">{{ lang._('In Errors') }}</th>
                     <th data-column-id="out_errors" data-type="string">{{ lang._('Out Errors') }}</th>
                 </tr>
@@ -281,6 +287,8 @@ $( document ).ready(function () {
                     '<td>' + (sw.mgmt_ip || '') + '</td>' +
                     '<td>' + (sw.chassis_id || '') + '</td>' +
                     '<td>' + (sw.model || '') + '</td>' +
+                    '<td>' + (sw.firmware_version || '') + '</td>' +
+                    '<td>' + (sw.vendor || '') + '</td>' +
                     '<td>' + statusLabel + '</td>' +
                     '<td>' + (sw.last_seen || '') + '</td>' +
                     '</tr>'
@@ -321,8 +329,12 @@ $( document ).ready(function () {
                     '<td>' + (port.admin_status || '') + '</td>' +
                     '<td>' + (port.oper_status || '') + '</td>' +
                     '<td>' + (port.speed_mbps || '') + '</td>' +
-                    '<td>' + (port.vlan_id || '') + '</td>' +
+                    '<td>' + (port.vlan_display || '') + '</td>' +
                     '<td>' + (port.lldp_neighbor_name || '') + '</td>' +
+                    '<td>' + (port.in_pkts || '0') + '</td>' +
+                    '<td>' + (port.out_pkts || '0') + '</td>' +
+                    '<td>' + (port.in_octets || '0') + '</td>' +
+                    '<td>' + (port.out_octets || '0') + '</td>' +
                     '<td>' + (port.in_errors || '0') + '</td>' +
                     '<td>' + (port.out_errors || '0') + '</td>' +
                     '</tr>'

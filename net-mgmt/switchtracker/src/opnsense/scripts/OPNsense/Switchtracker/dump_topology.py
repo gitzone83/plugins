@@ -2,7 +2,7 @@
 """Dump network topology (nodes + edges) from SQLite as JSON for D3.js."""
 
 import json
-from lib.db import get_connection, dict_from_row
+from lib.db import get_connection, dict_from_row, SELF_CHASSIS_ID
 
 
 def dump_topology():
@@ -17,20 +17,14 @@ def dump_topology():
     nodes = []
     for row in switch_rows:
         sw = dict_from_row(row)
+        is_self = sw['chassis_id'] == SELF_CHASSIS_ID
         nodes.append({
             'id': sw['id'],
-            'label': sw['hostname'] or sw['chassis_id'],
-            'ip': sw.get('mgmt_ip', ''),
+            'label': 'OPNsense' if is_self else (sw['hostname'] or sw['chassis_id']),
+            'ip': sw.get('mgmt_ip', '') or '',
             'online': sw.get('is_online', 0) == 1,
+            'local': is_self,
         })
-
-    # Add node 0 for this OPNsense device
-    nodes.insert(0, {
-        'id': 0,
-        'label': 'OPNsense',
-        'ip': '',
-        'online': True,
-    })
 
     # Edges = all links
     link_rows = conn.execute(

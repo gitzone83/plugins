@@ -23,6 +23,15 @@
                 <Default>1</Default>
                 <Required>Y</Required>
             </autoDiscover>
+            <lldpInterfaces type="InterfaceField">
+                <Required>N</Required>
+                <Multiple>Y</Multiple>
+                <AddParentDevices>Y</AddParentDevices>
+                <filters>
+                    <enable>/^(?!0).*$/</enable>
+                    <type>/(?s)^((?!group).)*$/</type>
+                </filters>
+            </lldpInterfaces>
             <offlineThreshold type="IntegerField">
                 <Default>900</Default>
                 <Required>Y</Required>

@@ -4,7 +4,7 @@
 import sys
 import time
 from lib.db import get_connection
-from lib.config_reader import read_config
+from lib.config_reader import read_config, resolve_interfaces
 
 
 def mark_offline_switches(offline_threshold):
@@ -30,7 +30,8 @@ def poll_once():
     # LLDP discovery
     if general.get('lldpEnabled', '1') == '1':
         from poll_lldp import poll_lldp
-        poll_lldp()
+        allowed = resolve_interfaces(general.get('lldpInterfaces', ''))
+        poll_lldp(allowed_interfaces=allowed)
 
     # SNMP polling
     from poll_snmp import poll_snmp

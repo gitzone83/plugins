@@ -3,14 +3,15 @@
 
 import json
 import time
-from lib.db import get_connection, dict_from_row
+from lib.db import get_connection, dict_from_row, SELF_CHASSIS_ID
 
 
 def dump_switches():
-    """Output JSON list of all switches."""
+    """Output JSON list of all switches (excluding local OPNsense device)."""
     conn = get_connection()
     rows = conn.execute(
-        "SELECT * FROM switches ORDER BY hostname, chassis_id"
+        "SELECT * FROM switches WHERE chassis_id != ? ORDER BY hostname, chassis_id",
+        (SELF_CHASSIS_ID,)
     ).fetchall()
     conn.close()
 

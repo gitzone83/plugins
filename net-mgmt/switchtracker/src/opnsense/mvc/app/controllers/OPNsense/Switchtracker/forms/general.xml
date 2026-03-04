@@ -24,6 +24,12 @@
         <help>Automatically add switches discovered via LLDP to the inventory.</help>
     </field>
     <field>
+        <id>switchtracker.general.lldpInterfaces</id>
+        <label>LLDP Interfaces</label>
+        <type>select_multiple</type>
+        <help>Select interface(s) to monitor for LLDP neighbors. Leave empty to use all interfaces.</help>
+    </field>
+    <field>
         <id>switchtracker.general.offlineThreshold</id>
         <label>Offline Threshold (seconds)</label>
         <type>text</type>

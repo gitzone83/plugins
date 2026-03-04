@@ -69,3 +69,40 @@ def get_credential_by_uuid(config, uuid):
         if cred.get('uuid') == uuid:
             return cred
     return None
+
+
+def resolve_interfaces(iface_names):
+    """Resolve OPNsense interface names (wan, lan) to device names (vtnet0, vtnet1).
+
+    Args:
+        iface_names: comma-separated string of OPNsense interface names
+
+    Returns:
+        set of device names, or None if input is empty
+    """
+    if not iface_names or not iface_names.strip():
+        return None
+
+    names = set(n.strip() for n in iface_names.split(',') if n.strip())
+    if not names:
+        return None
+
+    try:
+        tree = ET.parse(CONFIG_PATH)
+        root = tree.getroot()
+    except (ET.ParseError, FileNotFoundError):
+        return None
+
+    interfaces = root.find('interfaces')
+    if interfaces is None:
+        return None
+
+    devices = set()
+    for name in names:
+        iface = interfaces.find(name)
+        if iface is not None:
+            if_elem = iface.find('if')
+            if if_elem is not None and if_elem.text:
+                devices.add(if_elem.text)
+
+    return devices if devices else None

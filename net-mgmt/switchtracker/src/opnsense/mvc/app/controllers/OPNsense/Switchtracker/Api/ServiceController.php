@@ -34,7 +34,6 @@ use OPNsense\Core\Backend;
 class ServiceController extends ApiMutableServiceControllerBase
 {
     protected static $internalServiceClass = '\OPNsense\Switchtracker\Switchtracker';
-    protected static $internalServiceTemplate = 'OPNsense/Switchtracker';
     protected static $internalServiceEnabled = 'general.enabled';
     protected static $internalServiceName = 'switchtracker';
 
