@@ -3,24 +3,24 @@
         <id>alertRule.enabled</id>
         <label>Enabled</label>
         <type>checkbox</type>
-        <help>Enable this alert rule.</help>
+        <help>Enable or disable this alert rule. Disabled rules are not evaluated during polling.</help>
     </field>
     <field>
         <id>alertRule.event</id>
         <label>Event Type</label>
         <type>dropdown</type>
-        <help>The event type that triggers this alert.</help>
+        <help><![CDATA[Select the condition that triggers this alert. Available event types:<br/><br/><b>Switch Offline</b> — triggers when a previously online switch stops responding. Threshold is ignored.<br/><b>Switch New</b> — triggers when a new switch is discovered via LLDP or SNMP within the last polling interval. Threshold is ignored.<br/><b>Port Down</b> — triggers when a port is administratively up but operationally down (link failure). Threshold is ignored.<br/><b>Port Errors</b> — triggers when the combined input and output error count on a port exceeds the configured threshold.<br/><br/>All alerts are emitted to syslog (LOCAL0 facility) and logged in the Alert Log below.]]></help>
     </field>
     <field>
         <id>alertRule.threshold</id>
         <label>Threshold</label>
         <type>text</type>
-        <help>Error count threshold (used for port_errors event type).</help>
+        <help><![CDATA[Numeric threshold value. Only used by the <b>Port Errors</b> event type — an alert fires when (input errors + output errors) on any port exceeds this value. Ignored for all other event types.]]></help>
     </field>
     <field>
         <id>alertRule.description</id>
         <label>Description</label>
         <type>text</type>
-        <help>Optional description for this alert rule.</help>
+        <help>Optional note to identify this rule (e.g. "Alert on core switch failure"). Shown in the rules list for reference.</help>
     </field>
 </form>

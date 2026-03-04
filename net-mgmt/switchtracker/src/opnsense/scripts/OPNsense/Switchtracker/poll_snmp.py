@@ -127,7 +127,107 @@ def _poll_switch(conn, config, sw):
                  now)
             )
 
+    # Create topology links from LLDP neighbor data
+    _update_links(conn, switch_id, ports, lldp_neighbors, now)
+
     conn.commit()
+
+
+def _resolve_neighbor(conn, neighbor_name):
+    """Try to match an LLDP neighbor name to a known switch in the DB.
+
+    Tries exact match on hostname/chassis_id, then substring match.
+    Returns the switch row or None.
+    """
+    if not neighbor_name:
+        return None
+    # Exact match on hostname or chassis_id
+    row = conn.execute(
+        "SELECT id, hostname, chassis_id FROM switches WHERE hostname = ? OR chassis_id = ?",
+        (neighbor_name, neighbor_name)
+    ).fetchone()
+    if row:
+        return row
+    # Substring match: neighbor_name contains a known hostname or vice versa
+    all_switches = conn.execute(
+        "SELECT id, hostname, chassis_id FROM switches"
+    ).fetchall()
+    for sw in all_switches:
+        h = sw['hostname'] or ''
+        c = sw['chassis_id'] or ''
+        if not h and not c:
+            continue
+        # Skip the OPNsense self entry for substring matching
+        if c == '__opnsense_self__':
+            continue
+        # Check if known hostname appears in the LLDP name or vice versa
+        nl = neighbor_name.lower()
+        if h and (h.lower() in nl or nl in h.lower()):
+            return sw
+        if c and (c.lower() in nl or nl in c.lower()):
+            return sw
+    return None
+
+
+def _update_links(conn, switch_id, ports, lldp_neighbors, now):
+    """Create/update topology links from LLDP neighbor data on ports."""
+    # Build port_index -> port_name map
+    port_names = {p['port_index']: p['port_name'] for p in ports}
+
+    # Deduplicate: group by neighbor name to create one link per neighbor pair
+    seen = set()
+    for idx_str, neighbor in lldp_neighbors.items():
+        neighbor_name = neighbor.get('name', '')
+        remote_port = neighbor.get('port', '')
+        if not neighbor_name:
+            continue
+
+        remote_sw = _resolve_neighbor(conn, neighbor_name)
+        if not remote_sw:
+            continue
+        remote_switch_id = remote_sw['id']
+
+        # Use first port as representative for this link pair
+        pair_key = (min(switch_id, remote_switch_id), max(switch_id, remote_switch_id))
+        if pair_key in seen:
+            continue
+        seen.add(pair_key)
+
+        local_port = port_names.get(int(idx_str), '') if idx_str.isdigit() else ''
+
+        existing_link = conn.execute(
+            """SELECT id FROM links
+               WHERE local_switch_id = ? AND remote_switch_id = ?""",
+            (switch_id, remote_switch_id)
+        ).fetchone()
+
+        if existing_link:
+            conn.execute(
+                "UPDATE links SET local_port = ?, remote_port = ?, last_seen = ? WHERE id = ?",
+                (local_port, remote_port, now, existing_link['id'])
+            )
+        else:
+            # Also check reverse direction
+            reverse = conn.execute(
+                """SELECT id FROM links
+                   WHERE local_switch_id = ? AND remote_switch_id = ?""",
+                (remote_switch_id, switch_id)
+            ).fetchone()
+            if reverse:
+                conn.execute(
+                    "UPDATE links SET last_seen = ? WHERE id = ?",
+                    (now, reverse['id'])
+                )
+            else:
+                conn.execute(
+                    """INSERT INTO links (local_switch_id, local_port,
+                       remote_chassis_id, remote_port, remote_switch_id,
+                       first_seen, last_seen)
+                       VALUES (?, ?, ?, ?, ?, ?, ?)""",
+                    (switch_id, local_port,
+                     remote_sw['chassis_id'], remote_port, remote_switch_id,
+                     now, now)
+                )
 
 
 def poll_snmp(target_uuid=None):

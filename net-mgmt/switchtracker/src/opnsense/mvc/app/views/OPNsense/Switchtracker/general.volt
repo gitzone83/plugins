@@ -380,5 +380,240 @@ $( document ).ready(function () {
     $('a[href="#alerts"]').on('shown.bs.tab', function () {
         loadAlertLog();
     });
+
+    // Topology graph (pure SVG, no external libs)
+    var topoSim = null;
+
+    function loadTopology() {
+        ajaxGet(url="/api/switchtracker/service/topology", sendData={}, callback=function(data, status) {
+            var nodes = data.nodes || [];
+            var edges = data.edges || [];
+            if (!nodes.length) return;
+            renderTopology(nodes, edges);
+        });
+    }
+
+    function renderTopology(nodes, edges) {
+        var container = document.getElementById('topology-graph');
+        container.innerHTML = '';
+        var W = container.clientWidth || 800;
+        var H = container.clientHeight || 600;
+
+        var ns = 'http://www.w3.org/2000/svg';
+        var svg = document.createElementNS(ns, 'svg');
+        svg.setAttribute('width', W);
+        svg.setAttribute('height', H);
+        svg.style.fontFamily = '"Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif';
+        container.appendChild(svg);
+
+        // Build id->index map
+        var idMap = {};
+        nodes.forEach(function(n, i) {
+            idMap[n.id] = i;
+            n.x = W / 2 + (Math.random() - 0.5) * W * 0.5;
+            n.y = H / 2 + (Math.random() - 0.5) * H * 0.5;
+            n.vx = 0;
+            n.vy = 0;
+        });
+
+        // Resolve edge indices
+        var links = [];
+        edges.forEach(function(e) {
+            var si = idMap[e.source], ti = idMap[e.target];
+            if (si !== undefined && ti !== undefined) {
+                links.push({
+                    source: si, target: ti,
+                    sourcePort: e.sourcePort || '', targetPort: e.targetPort || ''
+                });
+            }
+        });
+
+        // SVG elements - edges first (behind nodes)
+        var edgeEls = [];
+        var edgeLabelEls = [];
+        links.forEach(function(l) {
+            var line = document.createElementNS(ns, 'line');
+            line.setAttribute('stroke', '#999');
+            line.setAttribute('stroke-width', 2);
+            svg.appendChild(line);
+            edgeEls.push(line);
+            var label = document.createElementNS(ns, 'text');
+            label.setAttribute('font-size', '10');
+            label.setAttribute('fill', '#666');
+            label.setAttribute('text-anchor', 'middle');
+            svg.appendChild(label);
+            edgeLabelEls.push(label);
+        });
+
+        // Node groups
+        var nodeR = 24;
+        var nodeEls = [];
+        nodes.forEach(function(n, i) {
+            var g = document.createElementNS(ns, 'g');
+            g.style.cursor = 'grab';
+
+            var circle = document.createElementNS(ns, 'circle');
+            circle.setAttribute('r', nodeR);
+            circle.setAttribute('fill', n.local ? '#d9534f' : (n.online ? '#5cb85c' : '#aaa'));
+            circle.setAttribute('stroke', '#fff');
+            circle.setAttribute('stroke-width', 2);
+            g.appendChild(circle);
+
+            // Icon text (switch or firewall)
+            var icon = document.createElementNS(ns, 'text');
+            icon.setAttribute('text-anchor', 'middle');
+            icon.setAttribute('dy', '5');
+            icon.setAttribute('fill', '#fff');
+            icon.setAttribute('font-size', '16');
+            icon.setAttribute('font-weight', 'bold');
+            icon.textContent = n.local ? '\u2691' : '\u2630';
+            g.appendChild(icon);
+
+            // Label below
+            var label = document.createElementNS(ns, 'text');
+            label.setAttribute('text-anchor', 'middle');
+            label.setAttribute('dy', nodeR + 14);
+            label.setAttribute('font-size', '12');
+            label.setAttribute('font-weight', '600');
+            label.setAttribute('fill', '#333');
+            label.textContent = n.label;
+            g.appendChild(label);
+
+            // IP below label
+            if (n.ip) {
+                var ipLabel = document.createElementNS(ns, 'text');
+                ipLabel.setAttribute('text-anchor', 'middle');
+                ipLabel.setAttribute('dy', nodeR + 27);
+                ipLabel.setAttribute('font-size', '10');
+                ipLabel.setAttribute('fill', '#888');
+                ipLabel.textContent = n.ip;
+                g.appendChild(ipLabel);
+            }
+
+            svg.appendChild(g);
+            nodeEls.push(g);
+
+            // Drag behavior
+            (function(idx) {
+                var dragging = false, ox, oy;
+                g.addEventListener('mousedown', function(e) {
+                    dragging = true;
+                    ox = e.clientX - nodes[idx].x;
+                    oy = e.clientY - nodes[idx].y;
+                    nodes[idx].fixed = true;
+                    g.style.cursor = 'grabbing';
+                    e.preventDefault();
+                });
+                document.addEventListener('mousemove', function(e) {
+                    if (!dragging) return;
+                    nodes[idx].x = e.clientX - ox;
+                    nodes[idx].y = e.clientY - oy;
+                    nodes[idx].vx = 0;
+                    nodes[idx].vy = 0;
+                    tick();
+                });
+                document.addEventListener('mouseup', function() {
+                    if (dragging) {
+                        dragging = false;
+                        nodes[idx].fixed = false;
+                        g.style.cursor = 'grab';
+                    }
+                });
+            })(i);
+        });
+
+        function tick() {
+            nodeEls.forEach(function(g, i) {
+                g.setAttribute('transform', 'translate(' + nodes[i].x + ',' + nodes[i].y + ')');
+            });
+            edgeEls.forEach(function(line, i) {
+                var s = nodes[links[i].source], t = nodes[links[i].target];
+                line.setAttribute('x1', s.x);
+                line.setAttribute('y1', s.y);
+                line.setAttribute('x2', t.x);
+                line.setAttribute('y2', t.y);
+            });
+            edgeLabelEls.forEach(function(lbl, i) {
+                var s = nodes[links[i].source], t = nodes[links[i].target];
+                lbl.setAttribute('x', (s.x + t.x) / 2);
+                lbl.setAttribute('y', (s.y + t.y) / 2 - 5);
+                var parts = [];
+                if (links[i].sourcePort) parts.push(links[i].sourcePort);
+                if (links[i].targetPort) parts.push(links[i].targetPort);
+                lbl.textContent = parts.join(' \u2194 ');
+            });
+        }
+
+        // Simple force simulation
+        var alpha = 1.0;
+        var springLen = 180;
+        var repulsion = 3000;
+        var damping = 0.85;
+
+        function simulate() {
+            if (alpha < 0.001) { topoSim = null; return; }
+            alpha *= 0.99;
+
+            // Repulsion between all node pairs
+            for (var i = 0; i < nodes.length; i++) {
+                for (var j = i + 1; j < nodes.length; j++) {
+                    var dx = nodes[j].x - nodes[i].x;
+                    var dy = nodes[j].y - nodes[i].y;
+                    var dist = Math.sqrt(dx * dx + dy * dy) || 1;
+                    var force = repulsion / (dist * dist);
+                    var fx = dx / dist * force * alpha;
+                    var fy = dy / dist * force * alpha;
+                    if (!nodes[i].fixed) { nodes[i].vx -= fx; nodes[i].vy -= fy; }
+                    if (!nodes[j].fixed) { nodes[j].vx += fx; nodes[j].vy += fy; }
+                }
+            }
+
+            // Spring attraction along edges
+            links.forEach(function(l) {
+                var s = nodes[l.source], t = nodes[l.target];
+                var dx = t.x - s.x, dy = t.y - s.y;
+                var dist = Math.sqrt(dx * dx + dy * dy) || 1;
+                var force = (dist - springLen) * 0.05 * alpha;
+                var fx = dx / dist * force;
+                var fy = dy / dist * force;
+                if (!s.fixed) { s.vx += fx; s.vy += fy; }
+                if (!t.fixed) { t.vx -= fx; t.vy -= fy; }
+            });
+
+            // Center gravity
+            nodes.forEach(function(n) {
+                if (n.fixed) return;
+                n.vx += (W / 2 - n.x) * 0.01 * alpha;
+                n.vy += (H / 2 - n.y) * 0.01 * alpha;
+            });
+
+            // Apply velocity
+            nodes.forEach(function(n) {
+                if (n.fixed) return;
+                n.vx *= damping;
+                n.vy *= damping;
+                n.x += n.vx;
+                n.y += n.vy;
+                // Keep in bounds
+                n.x = Math.max(nodeR + 5, Math.min(W - nodeR - 5, n.x));
+                n.y = Math.max(nodeR + 5, Math.min(H - nodeR - 30, n.y));
+            });
+
+            tick();
+            topoSim = requestAnimationFrame(simulate);
+        }
+
+        tick();
+        topoSim = requestAnimationFrame(simulate);
+    }
+
+    $('a[href="#topology"]').on('shown.bs.tab', function () {
+        loadTopology();
+    });
+
+    $("#refreshTopology").click(function() {
+        if (topoSim) { cancelAnimationFrame(topoSim); topoSim = null; }
+        loadTopology();
+    });
 });
 </script>
