@@ -1,0 +1,9 @@
+<acl>
+    <page-services-switchtracker>
+        <name>Services: Switch Tracker</name>
+        <patterns>
+            <pattern>ui/switchtracker/*</pattern>
+            <pattern>api/switchtracker/*</pattern>
+        </patterns>
+    </page-services-switchtracker>
+</acl>

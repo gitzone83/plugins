@@ -1,0 +1,26 @@
+<form>
+    <field>
+        <id>alertRule.enabled</id>
+        <label>Enabled</label>
+        <type>checkbox</type>
+        <help>Enable this alert rule.</help>
+    </field>
+    <field>
+        <id>alertRule.event</id>
+        <label>Event Type</label>
+        <type>dropdown</type>
+        <help>The event type that triggers this alert.</help>
+    </field>
+    <field>
+        <id>alertRule.threshold</id>
+        <label>Threshold</label>
+        <type>text</type>
+        <help>Error count threshold (used for port_errors event type).</help>
+    </field>
+    <field>
+        <id>alertRule.description</id>
+        <label>Description</label>
+        <type>text</type>
+        <help>Optional description for this alert rule.</help>
+    </field>
+</form>

@@ -1,0 +1,44 @@
+<form>
+    <field>
+        <id>switchdev.enabled</id>
+        <label>Enabled</label>
+        <type>checkbox</type>
+        <help>Enable monitoring for this switch.</help>
+    </field>
+    <field>
+        <id>switchdev.hostname</id>
+        <label>Hostname</label>
+        <type>text</type>
+        <help>Display name for this switch.</help>
+    </field>
+    <field>
+        <id>switchdev.address</id>
+        <label>Address</label>
+        <type>text</type>
+        <help>IP address or hostname of the switch.</help>
+    </field>
+    <field>
+        <id>switchdev.credential</id>
+        <label>SNMP Credential</label>
+        <type>dropdown</type>
+        <help>Select an SNMP credential profile to use for this switch.</help>
+    </field>
+    <field>
+        <id>switchdev.snmpEnabled</id>
+        <label>Enable SNMP Polling</label>
+        <type>checkbox</type>
+        <help>Poll this switch via SNMP for port status and statistics.</help>
+    </field>
+    <field>
+        <id>switchdev.notes</id>
+        <label>Notes</label>
+        <type>text</type>
+        <help>Free-text notes about this switch.</help>
+    </field>
+    <field>
+        <id>switchdev.description</id>
+        <label>Description</label>
+        <type>text</type>
+        <help>Optional description.</help>
+    </field>
+</form>

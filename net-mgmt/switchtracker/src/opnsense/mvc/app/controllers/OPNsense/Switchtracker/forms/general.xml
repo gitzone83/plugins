@@ -1,0 +1,32 @@
+<form>
+    <field>
+        <id>switchtracker.general.enabled</id>
+        <label>Enable Switch Tracker</label>
+        <type>checkbox</type>
+        <help>Enable the Switch Tracker service.</help>
+    </field>
+    <field>
+        <id>switchtracker.general.pollInterval</id>
+        <label>Poll Interval (seconds)</label>
+        <type>text</type>
+        <help>How often to poll switches (60-86400 seconds). Default: 300.</help>
+    </field>
+    <field>
+        <id>switchtracker.general.lldpEnabled</id>
+        <label>Enable LLDP Discovery</label>
+        <type>checkbox</type>
+        <help>Use LLDP to automatically discover neighboring switches.</help>
+    </field>
+    <field>
+        <id>switchtracker.general.autoDiscover</id>
+        <label>Auto-Add Discovered Switches</label>
+        <type>checkbox</type>
+        <help>Automatically add switches discovered via LLDP to the inventory.</help>
+    </field>
+    <field>
+        <id>switchtracker.general.offlineThreshold</id>
+        <label>Offline Threshold (seconds)</label>
+        <type>text</type>
+        <help>Mark a switch as offline after this many seconds without a response. Default: 900.</help>
+    </field>
+</form>

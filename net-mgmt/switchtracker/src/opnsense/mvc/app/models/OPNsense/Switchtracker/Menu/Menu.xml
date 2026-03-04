@@ -1,0 +1,5 @@
+<menu>
+    <Services>
+        <SwitchTracker cssClass="fa fa-sitemap" url="/ui/switchtracker/general/index" VisibleName="Switch Tracker" />
+    </Services>
+</menu>

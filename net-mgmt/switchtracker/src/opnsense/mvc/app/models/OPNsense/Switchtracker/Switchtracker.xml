@@ -1,0 +1,168 @@
+<model>
+    <mount>//OPNsense/switchtracker</mount>
+    <description>Switch Tracker configuration</description>
+    <version>1.0.0</version>
+    <items>
+        <general>
+            <enabled type="BooleanField">
+                <Default>0</Default>
+                <Required>Y</Required>
+            </enabled>
+            <pollInterval type="IntegerField">
+                <Default>300</Default>
+                <Required>Y</Required>
+                <MinimumValue>60</MinimumValue>
+                <MaximumValue>86400</MaximumValue>
+                <ValidationMessage>Polling interval must be between 60 and 86400 seconds.</ValidationMessage>
+            </pollInterval>
+            <lldpEnabled type="BooleanField">
+                <Default>1</Default>
+                <Required>Y</Required>
+            </lldpEnabled>
+            <autoDiscover type="BooleanField">
+                <Default>1</Default>
+                <Required>Y</Required>
+            </autoDiscover>
+            <offlineThreshold type="IntegerField">
+                <Default>900</Default>
+                <Required>Y</Required>
+                <MinimumValue>60</MinimumValue>
+                <MaximumValue>604800</MaximumValue>
+                <ValidationMessage>Offline threshold must be between 60 and 604800 seconds.</ValidationMessage>
+            </offlineThreshold>
+        </general>
+        <credentials>
+            <credential type="ArrayField">
+                <enabled type="BooleanField">
+                    <Default>1</Default>
+                    <Required>Y</Required>
+                </enabled>
+                <name type="TextField">
+                    <Required>Y</Required>
+                    <Mask>/^([0-9a-zA-Z._\- ]){1,64}$/u</Mask>
+                    <ValidationMessage>Name should be between 1 and 64 characters.</ValidationMessage>
+                </name>
+                <version type="OptionField">
+                    <Default>2c</Default>
+                    <Required>Y</Required>
+                    <OptionValues>
+                        <option2c value="2c">SNMPv2c</option2c>
+                        <optionv3 value="v3">SNMPv3</optionv3>
+                    </OptionValues>
+                </version>
+                <community type="TextField">
+                    <Required>N</Required>
+                    <Mask>/^.{0,64}$/u</Mask>
+                </community>
+                <v3Username type="TextField">
+                    <Required>N</Required>
+                    <Mask>/^([0-9a-zA-Z._\-]){0,64}$/u</Mask>
+                </v3Username>
+                <v3AuthProto type="OptionField">
+                    <Default>SHA</Default>
+                    <Required>N</Required>
+                    <BlankDesc>None</BlankDesc>
+                    <OptionValues>
+                        <MD5>MD5</MD5>
+                        <SHA>SHA</SHA>
+                        <SHA256 value="SHA-256">SHA-256</SHA256>
+                    </OptionValues>
+                </v3AuthProto>
+                <v3AuthKey type="TextField">
+                    <Required>N</Required>
+                </v3AuthKey>
+                <v3PrivProto type="OptionField">
+                    <Default>AES</Default>
+                    <Required>N</Required>
+                    <BlankDesc>None</BlankDesc>
+                    <OptionValues>
+                        <DES>DES</DES>
+                        <AES>AES</AES>
+                        <AES256 value="AES-256">AES-256</AES256>
+                    </OptionValues>
+                </v3PrivProto>
+                <v3PrivKey type="TextField">
+                    <Required>N</Required>
+                </v3PrivKey>
+                <v3SecurityLevel type="OptionField">
+                    <Default>authPriv</Default>
+                    <Required>N</Required>
+                    <OptionValues>
+                        <noAuthNoPriv>noAuthNoPriv</noAuthNoPriv>
+                        <authNoPriv>authNoPriv</authNoPriv>
+                        <authPriv>authPriv</authPriv>
+                    </OptionValues>
+                </v3SecurityLevel>
+                <description type="TextField">
+                    <Required>N</Required>
+                </description>
+            </credential>
+        </credentials>
+        <switches>
+            <switchdev type="ArrayField">
+                <enabled type="BooleanField">
+                    <Default>1</Default>
+                    <Required>Y</Required>
+                </enabled>
+                <hostname type="TextField">
+                    <Required>Y</Required>
+                    <Mask>/^.{1,255}$/u</Mask>
+                    <ValidationMessage>Hostname is required (max 255 characters).</ValidationMessage>
+                </hostname>
+                <address type="TextField">
+                    <Required>Y</Required>
+                    <Mask>/^.{1,255}$/u</Mask>
+                    <ValidationMessage>Address or IP is required.</ValidationMessage>
+                </address>
+                <credential type="ModelRelationField">
+                    <Model>
+                        <credentials>
+                            <source>OPNsense.Switchtracker.Switchtracker</source>
+                            <items>credentials.credential</items>
+                            <display>name</display>
+                        </credentials>
+                    </Model>
+                    <Required>N</Required>
+                    <BlankDesc>None</BlankDesc>
+                </credential>
+                <snmpEnabled type="BooleanField">
+                    <Default>1</Default>
+                    <Required>Y</Required>
+                </snmpEnabled>
+                <notes type="TextField">
+                    <Required>N</Required>
+                </notes>
+                <description type="TextField">
+                    <Required>N</Required>
+                </description>
+            </switchdev>
+        </switches>
+        <alertRules>
+            <alertRule type="ArrayField">
+                <enabled type="BooleanField">
+                    <Default>1</Default>
+                    <Required>Y</Required>
+                </enabled>
+                <event type="OptionField">
+                    <Required>Y</Required>
+                    <OptionValues>
+                        <switch_offline>Switch Offline</switch_offline>
+                        <switch_new>New Switch Discovered</switch_new>
+                        <port_down>Port Down</port_down>
+                        <port_errors>Port Errors</port_errors>
+                    </OptionValues>
+                </event>
+                <threshold type="IntegerField">
+                    <Default>0</Default>
+                    <Required>N</Required>
+                    <MinimumValue>0</MinimumValue>
+                    <MaximumValue>1000000</MaximumValue>
+                    <ValidationMessage>Threshold must be between 0 and 1000000.</ValidationMessage>
+                </threshold>
+                <description type="TextField">
+                    <Required>N</Required>
+                </description>
+            </alertRule>
+        </alertRules>
+    </items>
+</model>

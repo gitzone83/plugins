@@ -1,0 +1,9 @@
+Switch Tracker plugin for OPNsense.
+
+Automatically discovers network switches via LLDP and monitors them
+via SNMP. Provides switch inventory, port status monitoring, network
+topology visualization, and alerting for offline switches or port errors.
+
+Requires os-lldpd and net-snmp packages.
+
+WWW: https://github.com/opnsense/plugins
