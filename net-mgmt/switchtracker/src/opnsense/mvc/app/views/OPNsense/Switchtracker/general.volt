@@ -138,7 +138,7 @@
                     <th data-column-id="port_name" data-type="string">{{ lang._('Port') }}</th>
                     <th data-column-id="admin_status" data-type="string">{{ lang._('Admin') }}</th>
                     <th data-column-id="oper_status" data-type="string">{{ lang._('Oper') }}</th>
-                    <th data-column-id="speed_mbps" data-type="string">{{ lang._('Speed (Mbps)') }}</th>
+                    <th data-column-id="speed_mbps" data-type="string">{{ lang._('Speed') }}</th>
                     <th data-column-id="vlan_display" data-type="string">{{ lang._('VLAN') }}</th>
                     <th data-column-id="lldp_neighbor_name" data-type="string">{{ lang._('LLDP Neighbor') }}</th>
                     <th data-column-id="in_pkts" data-type="string">{{ lang._('In Pkts') }}</th>

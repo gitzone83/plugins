@@ -22,6 +22,14 @@ class VendorBase:
             return bool(port_name)
         return if_type in (IF_TYPE_ETHERNET, IF_TYPE_LAG)
 
+    def short_port_name(self, port_name):
+        """Return an abbreviated, vendor-neutral port name for display.
+
+        Default: return as-is. Subclasses override for vendor-specific
+        abbreviations.
+        """
+        return port_name or ''
+
     def map_lldp_to_ifindex(self, lldp_neighbors, address, credential):
         """Map LLDP localPortNum keys to ifIndex keys via lldpLocPortTable.
 

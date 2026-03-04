@@ -26,6 +26,22 @@ class JuniperVendor(VendorBase):
             return False
         return True
 
+    # Juniper prefix → normalized prefix
+    _PORT_MAP = [
+        ('et-',  '40GE '),
+        ('xe-',  '10GE '),
+        ('ge-',  '1GE '),
+        ('ae',   'LAG '),
+    ]
+
+    def short_port_name(self, port_name):
+        if not port_name:
+            return ''
+        for jnpr_prefix, norm_prefix in self._PORT_MAP:
+            if port_name.startswith(jnpr_prefix):
+                return norm_prefix + port_name[len(jnpr_prefix):]
+        return port_name
+
     def map_lldp_to_ifindex(self, lldp_neighbors, address, credential):
         """Identity mapping -- on Juniper, localPortNum == ifIndex."""
         return lldp_neighbors

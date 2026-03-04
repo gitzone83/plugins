@@ -24,6 +24,25 @@ class CiscoIOSVendor(VendorBase):
 
     VENDOR_NAME = 'Cisco'
 
+    # Cisco long name → normalized prefix (longest match first)
+    _PORT_MAP = [
+        ('HundredGigE',            '100GE '),
+        ('FortyGigabitEthernet',   '40GE '),
+        ('TwentyFiveGigE',         '25GE '),
+        ('TenGigabitEthernet',     '10GE '),
+        ('GigabitEthernet',        '1GE '),
+        ('FastEthernet',           'FE '),
+        ('Port-channel',           'LAG '),
+    ]
+
+    def short_port_name(self, port_name):
+        if not port_name:
+            return ''
+        for long_prefix, norm_prefix in self._PORT_MAP:
+            if port_name.startswith(long_prefix):
+                return norm_prefix + port_name[len(long_prefix):]
+        return port_name
+
     def is_visible_port(self, port_name, if_type=None):
         if not port_name:
             return False

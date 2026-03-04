@@ -1,5 +1,7 @@
 """Arista Networks (EOS) vendor handler."""
 
+import re
+
 from lib.vendor._base import VendorBase
 
 _VISIBLE_PREFIXES = ('Ethernet', 'Port-Channel')
@@ -14,6 +16,21 @@ class AristaVendor(VendorBase):
     """
 
     VENDOR_NAME = 'Arista'
+
+    def short_port_name(self, port_name):
+        """Normalize Arista port names.
+
+        Arista uses 'Ethernet1' or 'Ethernet1/1' for all speeds.
+        We can't determine speed class from the name alone, so use
+        a generic 'ETH' prefix. Port-Channel becomes LAG.
+        """
+        if not port_name:
+            return ''
+        if port_name.startswith('Port-Channel'):
+            return 'LAG ' + port_name[len('Port-Channel'):]
+        if port_name.startswith('Ethernet'):
+            return 'ETH ' + port_name[len('Ethernet'):]
+        return port_name
 
     def is_visible_port(self, port_name, if_type=None):
         if not port_name:
