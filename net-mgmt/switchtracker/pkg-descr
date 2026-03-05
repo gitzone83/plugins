@@ -6,4 +6,4 @@ topology visualization, and alerting for offline switches or port errors.
 
 Requires os-lldpd and net-snmp packages.
 
-WWW: https://github.com/opnsense/plugins
+WWW: https://github.com/gitzone83/plugins

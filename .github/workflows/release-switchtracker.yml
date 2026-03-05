@@ -1,0 +1,63 @@
+name: Release os-switchtracker
+
+on:
+  push:
+    tags:
+      - 'os-switchtracker-v*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Extract version from tag
+        id: version
+        run: echo "version=${GITHUB_REF_NAME#os-switchtracker-v}" >> "$GITHUB_OUTPUT"
+
+      - name: Build release tarball
+        run: |
+          cd net-mgmt/switchtracker/src
+          tar czf /tmp/os-switchtracker-${{ steps.version.outputs.version }}.tar.gz \
+            --transform 's,^,usr/local/,' \
+            .
+          echo "## Contents" > /tmp/filelist.txt
+          echo '```' >> /tmp/filelist.txt
+          tar tzf /tmp/os-switchtracker-${{ steps.version.outputs.version }}.tar.gz >> /tmp/filelist.txt
+          echo '```' >> /tmp/filelist.txt
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: os-switchtracker ${{ steps.version.outputs.version }}
+          body: |
+            ## os-switchtracker ${{ steps.version.outputs.version }}
+
+            Network switch discovery and monitoring plugin for OPNsense.
+            Discovers switches via LLDP and monitors them via SNMP.
+
+            ### Quick Install (SSH as root)
+
+            ```sh
+            fetch -o /tmp/os-switchtracker.tar.gz https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/os-switchtracker-${{ steps.version.outputs.version }}.tar.gz
+            tar xzf /tmp/os-switchtracker.tar.gz -C /
+            chmod 755 /usr/local/opnsense/scripts/OPNsense/Switchtracker/*.py
+            service configd restart
+            ```
+
+            Then navigate to **Services > Switch Tracker** in the OPNsense web UI.
+
+            ### Requirements
+            - OPNsense 24.7+
+            - `os-lldpd` plugin
+            - `net-snmp` package
+
+            ### Uninstall
+            ```sh
+            fetch -o /tmp/uninstall.sh https://raw.githubusercontent.com/${{ github.repository }}/${{ github.ref_name }}/net-mgmt/switchtracker/scripts/uninstall.sh
+            sh /tmp/uninstall.sh
+            ```
+          files: /tmp/os-switchtracker-${{ steps.version.outputs.version }}.tar.gz
